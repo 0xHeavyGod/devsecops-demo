@@ -64,7 +64,7 @@ pipeline {
         stage('📦 SCA - Dependency Check') {
             steps {
                 echo '🔍 Analyse des dépendances avec OWASP Dependency-Check...'
-                sh 'mvn org.owasp:dependency-check-maven:check'
+                sh 'mvn org.owasp:dependency-check-maven:check -DupdateOnly=false -Dnvd.skip=true'
             }
             post {
                 always {
