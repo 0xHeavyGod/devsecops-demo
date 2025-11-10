@@ -15,6 +15,8 @@ pipeline {
         SONAR_TOKEN = credentials('sonar-token1')
         SONAR_HOST = 'http://localhost:9000'
         PROJECT_KEY = 'devsecops-demo'
+        HOST_PORT  = '8081'
+        APP_PORT   = '3000'
     }
 
     stages {
@@ -143,14 +145,18 @@ pipeline {
             }
         }
 
-        stage('🚀 Deploy to Staging') {
-            when { branch 'main' }
-            steps {
-                echo '🚀 Déploiement en environnement de staging...'
-                sh 'echo "Déploiement simulé vers staging"'
+        stage('Deploy') {
+              steps {
+                echo "🚀 Déploiement du conteneur sur le port ${HOST_PORT}..."
+                sh """
+                  docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop
+                  docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm
+                  docker stop ${PROJECT_KEY} || true
+                  docker rm ${PROJECT_KEY} || true
+                  docker run -d --name ${PROJECT_KEY} -p ${HOST_PORT}:${APP_PORT} ${PROJECT_KEY}
+                """
+              }
             }
-        }
-    }
 
     post {
         always {
