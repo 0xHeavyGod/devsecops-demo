@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME'  // Utiliser le nom configuré dans Jenkins
-        jdk 'JDK-11'
+        maven 'M2_HOME'
+        jdk 'JAVA_HOME'
     }
 
     environment {
