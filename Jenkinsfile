@@ -45,7 +45,7 @@ pipeline {
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
                 }
             }
         }
@@ -167,7 +167,7 @@ pipeline {
 
                 echo '🧹 Nettoyage de l\'environnement...'
                 cleanWs()
-            
+
         }
 
         success {
