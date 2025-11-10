@@ -180,16 +180,7 @@ pipeline {
             }
         }
 
-        stage('🚀 Deploy') {
-            steps {
-                echo "🚀 Déploiement du conteneur sur le port ${HOST_PORT}..."
-                sh """
-                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop || true
-                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm || true
-                    docker run -d --name ${PROJECT_KEY} -p ${HOST_PORT}:${APP_PORT} ${PROJECT_KEY}:latest
-                """
-            }
-        }
+        
     } // <-- fin stages
 
     post {
