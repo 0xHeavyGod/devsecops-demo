@@ -55,7 +55,7 @@ pipeline {
             steps {
                 echo '🔍 Analyse statique du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') { // Vérifier que le nom correspond à Jenkins
-                    sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.login=${env.SONAR_TOKEN}"
+                    sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.token=${env.SONAR_TOKEN}"
                     echo "Sonar analysis finished"
                 }
             }
