@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3.9'
+        maven 'M2_HOME'  // Utiliser le nom configuré dans Jenkins
         jdk 'JDK-11'
     }
 
@@ -152,9 +152,13 @@ pipeline {
                     }
                 }
                 publishHTML([
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
                     reportDir: '.',
                     reportFiles: 'zap-report.html',
-                    reportName: 'ZAP Security Report'
+                    reportName: 'ZAP Security Report',
+                    reportTitles: 'OWASP ZAP Security Report'
                 ])
             }
         }
@@ -167,51 +171,69 @@ pipeline {
         }
         success {
             echo '✅ Pipeline terminé avec succès !'
-            emailext (
-                subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Le build a été complété avec succès !
+            script {
+                try {
+                    emailext (
+                        subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """
+                            Le build a été complété avec succès !
 
-                    Projet: ${env.JOB_NAME}
-                    Build: ${env.BUILD_NUMBER}
+                            Projet: ${env.JOB_NAME}
+                            Build: ${env.BUILD_NUMBER}
 
-                    Consultez les rapports de sécurité:
-                    ${env.BUILD_URL}
-                """,
-                to: 'votre-email@example.com'
-            )
+                            Consultez les rapports de sécurité:
+                            ${env.BUILD_URL}
+                        """,
+                        to: 'votre-email@example.com'
+                    )
+                } catch (Exception e) {
+                    echo "Email notification non configuré: ${e.message}"
+                }
+            }
         }
         failure {
             echo '❌ Pipeline échoué !'
-            emailext (
-                subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Le build a échoué !
+            script {
+                try {
+                    emailext (
+                        subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """
+                            Le build a échoué !
 
-                    Projet: ${env.JOB_NAME}
-                    Build: ${env.BUILD_NUMBER}
+                            Projet: ${env.JOB_NAME}
+                            Build: ${env.BUILD_NUMBER}
 
-                    Vérifiez les logs:
-                    ${env.BUILD_URL}console
-                """,
-                to: 'votre-email@example.com'
-            )
+                            Vérifiez les logs:
+                            ${env.BUILD_URL}console
+                        """,
+                        to: 'votre-email@example.com'
+                    )
+                } catch (Exception e) {
+                    echo "Email notification non configuré: ${e.message}"
+                }
+            }
         }
         unstable {
             echo '⚠️ Build instable - Vulnérabilités détectées'
-            emailext (
-                subject: "⚠️ Build UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                body: """
-                    Des vulnérabilités ont été détectées !
+            script {
+                try {
+                    emailext (
+                        subject: "⚠️ Build UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                        body: """
+                            Des vulnérabilités ont été détectées !
 
-                    Projet: ${env.JOB_NAME}
-                    Build: ${env.BUILD_NUMBER}
+                            Projet: ${env.JOB_NAME}
+                            Build: ${env.BUILD_NUMBER}
 
-                    Consultez les rapports:
-                    ${env.BUILD_URL}
-                """,
-                to: 'votre-email@example.com'
-            )
+                            Consultez les rapports:
+                            ${env.BUILD_URL}
+                        """,
+                        to: 'votre-email@example.com'
+                    )
+                } catch (Exception e) {
+                    echo "Email notification non configuré: ${e.message}"
+                }
+            }
         }
     }
 }
