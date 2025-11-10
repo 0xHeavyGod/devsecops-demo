@@ -8,6 +8,7 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
+        SONAR_HOST = 'http://192.168.33.10:9000'
         PROJECT_KEY = 'devsecops-demo'
     }
 
@@ -57,7 +58,7 @@ pipeline {
                     sh '''
                         mvn sonar:sonar \
                         -Dsonar.projectKey=${PROJECT_KEY} \
-                        -Dsonar.host.url=http://localhost:9000 \
+                        -Dsonar.host.url==${SONAR_HOST} \
                         -Dsonar.login=${SONAR_TOKEN}
                     '''
                 }
