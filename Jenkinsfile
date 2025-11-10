@@ -61,14 +61,7 @@ pipeline {
             }
         }
 
-        stage('📊 Quality Gate') {
-            steps {
-                echo '⏳ Vérification du Quality Gate SonarQube...'
-                timeout(time: 1, unit: 'MINUTES') { // Timeout augmenté
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+
 
         stage('📦 SCA - Dependency Check') {
             steps {
@@ -147,7 +140,16 @@ pipeline {
                 ])
             }
         }
+        stage('📊 Quality Gate') {
+                    steps {
+                        echo '⏳ Vérification du Quality Gate SonarQube...'
+                        timeout(time: 1, unit: 'MINUTES') { // Timeout augmenté
+                            waitForQualityGate abortPipeline: true
+                        }
+                    }
+                }
     }
+
 
     post {
         always {
