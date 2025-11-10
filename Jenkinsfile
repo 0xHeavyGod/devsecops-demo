@@ -65,7 +65,10 @@ pipeline {
             steps {
                 echo '🔍 Scanning project with Trivy...'
                                // Scan the local filesystem (project folder)
-                               sh 'trivy fs --format json --output trivy-report.json .'
+                               sh '''
+
+                                           trivy fs --format json --output /home/vagrant/trivy-report.json .
+                                       '''
             }
             post {
                 always {
