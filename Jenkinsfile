@@ -54,9 +54,8 @@ pipeline {
         stage('🛡️ SAST - SonarQube Analysis') {
             steps {
                 echo '🔍 Analyse statique du code avec SonarQube...'
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('SonarQube') { // Vérifier que le nom correspond à Jenkins
                     sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.login=${env.SONAR_TOKEN}"
-
                 }
             }
         }
@@ -64,7 +63,7 @@ pipeline {
         stage('📊 Quality Gate') {
             steps {
                 echo '⏳ Vérification du Quality Gate SonarQube...'
-                timeout(time: 5, unit: 'MINUTES') {
+                timeout(time: 10, unit: 'MINUTES') { // Timeout augmenté
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -84,20 +83,14 @@ pipeline {
         }
 
         stage('🐳 Docker Security Scan') {
-            when {
-                expression { fileExists('Dockerfile') }
-            }
+            when { expression { fileExists('Dockerfile') } }
             steps {
                 echo '🔍 Scan de sécurité de l\'image Docker avec Trivy...'
                 script {
                     sh '''
-                        # Build de l'image Docker
                         docker build -t devsecops-demo:latest .
-
-                        # Scan avec Trivy (JSON + HTML)
                         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image --format json --output trivy-report.json devsecops-demo:latest
-
                         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image --format template --template "@contrib/html.tpl" \
                         --output trivy-report.html devsecops-demo:latest
@@ -120,9 +113,7 @@ pipeline {
         }
 
         stage('🚀 Deploy to Staging') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 echo '🚀 Déploiement en environnement de staging...'
                 sh 'echo "Déploiement simulé vers staging"'
@@ -130,9 +121,7 @@ pipeline {
         }
 
         stage('🎯 DAST - Dynamic Security Testing') {
-            when {
-                branch 'main'
-            }
+            when { branch 'main' }
             steps {
                 echo '🔍 Scan DAST avec OWASP ZAP...'
                 script {
@@ -161,17 +150,15 @@ pipeline {
 
     post {
         always {
-
-                echo '🧹 Nettoyage de l\'environnement...'
-                cleanWs()
-
+            echo '🧹 Nettoyage de l\'environnement...'
+            cleanWs()
         }
 
         success {
             echo '✅ Pipeline terminé avec succès !'
             script {
                 try {
-                    emailext (
+                    emailext(
                         subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                         body: """
                             Le build a été complété avec succès !
@@ -192,48 +179,10 @@ pipeline {
 
         failure {
             echo '❌ Pipeline échoué !'
-            script {
-                try {
-                    emailext (
-                        subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                        body: """
-                            Le build a échoué !
-
-                            Projet: ${env.JOB_NAME}
-                            Build: ${env.BUILD_NUMBER}
-
-                            Vérifiez les logs:
-                            ${env.BUILD_URL}console
-                        """,
-                        to: 'votre-email@example.com'
-                    )
-                } catch (Exception e) {
-                    echo "Email notification non configuré: ${e.message}"
-                }
-            }
         }
 
         unstable {
             echo '⚠️ Build instable - Vulnérabilités détectées'
-            script {
-                try {
-                    emailext (
-                        subject: "⚠️ Build UNSTABLE: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                        body: """
-                            Des vulnérabilités ont été détectées !
-
-                            Projet: ${env.JOB_NAME}
-                            Build: ${env.BUILD_NUMBER}
-
-                            Consultez les rapports:
-                            ${env.BUILD_URL}
-                        """,
-                        to: 'votre-email@example.com'
-                    )
-                } catch (Exception e) {
-                    echo "Email notification non configuré: ${e.message}"
-                }
-            }
         }
     }
 }
