@@ -1,10 +1,10 @@
 pipeline {
     agent any
     options {
-        disableConcurrentBuilds()
-        skipDefaultCheckout(false)
-        cleanWs()
-    }
+            disableConcurrentBuilds()
+            skipDefaultCheckout(false)
+            timestamps()
+        }
 
     tools {
         maven 'M2_HOME'
