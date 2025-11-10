@@ -1,5 +1,7 @@
 package com.security.devsecopsdemo;
 
+import org.junit.jupiter.api.Test;
+
 import java.sql.*;
 
 public class DevsecopsDemoApplicationTests {
@@ -21,5 +23,28 @@ public class DevsecopsDemoApplicationTests {
         PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE name = ?");
         pstmt.setString(1, userInput);
         ResultSet rs = pstmt.executeQuery();
+    }
+
+    // ===========================
+    // Tests unitaires
+    // ===========================
+    @Test
+    public void testUnsafeQuery() {
+        DevsecopsDemoApplicationTests demo = new DevsecopsDemoApplicationTests();
+        try {
+            demo.unsafeQuery("alice");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSafeQuery() {
+        DevsecopsDemoApplicationTests demo = new DevsecopsDemoApplicationTests();
+        try {
+            demo.safeQuery("alice");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
