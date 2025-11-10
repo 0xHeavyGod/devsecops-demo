@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('sonar-token1')
-        SONAR_HOST = 'http://192.168.33.10:9000'
+        SONAR_HOST = 'http://localhost:9000'
         PROJECT_KEY = 'devsecops-demo'
     }
 
