@@ -55,7 +55,7 @@ pipeline {
             steps {
                 echo '🔍 Analyse statique du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=devsecops-demo -Dsonar.host.url==http://localhost:9000 -Dsonar.login=$SONAR_TOKEN'
+                    sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.login=${env.SONAR_TOKEN}"
 
                 }
             }
