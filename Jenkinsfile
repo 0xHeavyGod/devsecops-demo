@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        SONAR_TOKEN = credentials('sonarqube-token')
+        SONAR_TOKEN = credentials('sonar-token')
         PROJECT_KEY = 'devsecops-demo'
     }
 
@@ -166,9 +166,12 @@ pipeline {
 
     post {
         always {
-            echo '🧹 Nettoyage de l\'environnement...'
-            cleanWs()
+            node {
+                echo '🧹 Nettoyage de l\'environnement...'
+                cleanWs()
+            }
         }
+    }
         success {
             echo '✅ Pipeline terminé avec succès !'
             script {
