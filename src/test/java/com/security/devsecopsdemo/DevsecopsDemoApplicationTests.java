@@ -8,10 +8,9 @@ public class DevsecopsDemoApplicationTests {
 
     // ❌ FAILLE : SQL Injection
     public void unsafeQuery(String userInput) throws SQLException {
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/db", "root", "password123");
-        Statement stmt = conn.createStatement();
-        String query = "SELECT * FROM users WHERE name = '" + userInput + "'"; // Vulnérable !
-        ResultSet rs = stmt.executeQuery(query);
+        // ⚠️ Simulation d'une requête vulnérable (pas de vraie connexion)
+        String query = "SELECT * FROM users WHERE name = '" + userInput + "'";
+        System.out.println("Executing unsafe query: " + query);
     }
 
     // ❌ FAILLE : Hardcoded credentials
@@ -19,10 +18,9 @@ public class DevsecopsDemoApplicationTests {
 
     // ✅ CORRECT : Prepared Statement
     public void safeQuery(String userInput) throws SQLException {
-        Connection conn = DriverManager.getConnection("jdbc:mysql://localhost/db", "root", "password123");
-        PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE name = ?");
-        pstmt.setString(1, userInput);
-        ResultSet rs = pstmt.executeQuery();
+        // ⚙️ Simulation de requête sécurisée
+        String query = "SELECT * FROM users WHERE name = ?";
+        System.out.println("Executing safe query: " + query + " with userInput=" + userInput);
     }
 
     // ===========================
