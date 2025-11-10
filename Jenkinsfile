@@ -151,7 +151,7 @@ pipeline {
                         ])
                     }
                 }
-            
+
 
 
     } // <-- fin stages
@@ -176,7 +176,7 @@ pipeline {
                             Consultez les rapports de sécurité:
                             ${env.BUILD_URL}
                         """,
-                        to: 'votre-email@example.com'
+                        to: 'realdhia07@gmail.com'
                     )
                 } catch (Exception e) {
                     echo "Email notification non configuré: ${e.message}"
