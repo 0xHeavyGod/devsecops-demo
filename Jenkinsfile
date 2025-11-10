@@ -18,6 +18,13 @@ pipeline {
     }
 
     stages {
+    stage('🧭 Debug Workspace') {
+        steps {
+            echo "Workspace path: ${env.WORKSPACE}"
+            sh 'pwd'
+            sh 'ls -la'
+        }
+    }
 
         stage('🔍 Checkout Code') {
             steps {
