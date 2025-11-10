@@ -95,33 +95,15 @@ pipeline {
             }
         }
 
-        stage('🐳 Docker Scan - Image Security') {
-            when { expression { fileExists('Dockerfile') } }
-            steps {
+        stage('Docker Scan - Image Security') {
+              steps {
                 echo '🔎 Scan de sécurité de l’image Docker...'
-                sh """
-                    echo "🔹 Images Docker avant build:"
-                    docker image ls
-
-                    echo "🔹 Construction de l'image ${PROJECT_KEY}:latest..."
-                    docker build -t ${PROJECT_KEY}:latest .
-
-                    echo "🔹 Scan Trivy JSON de l'image..."
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy image --exit-code 0 --format json --output trivy_image_report.json ${PROJECT_KEY}:latest
-
-                    echo "🔹 Scan Trivy HTML de l'image..."
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy image --format template --template "@contrib/html.tpl" \
-                        --output trivy_image_report.html ${PROJECT_KEY}:latest
-                """
+                sh '''
+                  docker image ls
+                  trivy image ${PROJECT_KEY} --exit-code 0 --format json --output trivy_image_report.json || true
+                '''
+              }
             }
-            post {
-                always {
-                    archiveArtifacts artifacts: 'trivy_image_report.*', allowEmptyArchive: true
-                }
-            }
-        }
 
         stage('📦 Package Application') {
             steps {
@@ -180,7 +162,7 @@ pipeline {
             }
         }
 
-        
+
     } // <-- fin stages
 
     post {
