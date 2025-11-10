@@ -71,37 +71,37 @@ pipeline {
             }
         }
 
-        stage('🎯 DAST - Dynamic Security Testing') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
-                }
-            }
-            steps {
-                echo '🔍 Scan DAST avec OWASP ZAP...'
-                script {
-                    try {
-                        sh '''
-                            docker run --rm -t owasp/zap2docker-stable zap-baseline.py \
-                            -t http://your-staging-url.com -r zap-report.html
-                        '''
-                    } catch (Exception e) {
-                        echo "⚠️ Vulnérabilités détectées par ZAP"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
-                publishHTML([
-                    allowMissing: true,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: '.',
-                    reportFiles: 'zap-report.html',
-                    reportName: 'ZAP Security Report',
-                    reportTitles: 'OWASP ZAP Security Report'
-                ])
-            }
-        }
+     stage('🎯 DAST - Dynamic Security Testing') {
+         when {
+             expression {
+                 env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master'
+             }
+         }
+         steps {
+             echo '🔍 Scan DAST avec OWASP ZAP...'
+             script {
+                 try {
+                     sh '''
+                         docker run --rm -t owasp/zap2docker-stable zap-baseline.py \
+                         -t http://your-staging-url.com -r zap-report.html
+                     '''
+                 } catch (Exception e) {
+                     echo "⚠️ Vulnérabilités détectées par ZAP"
+                     currentBuild.result = 'UNSTABLE'
+                 }
+             }
+             publishHTML([
+                 allowMissing: true,
+                 alwaysLinkToLastBuild: true,
+                 keepAll: true,
+                 reportDir: '.',
+                 reportFiles: 'zap-report.html',
+                 reportName: 'ZAP Security Report',
+                 reportTitles: 'OWASP ZAP Security Report'
+             ])
+         }
+     }
+
 
 
         stage('📦 SCA - Dependency Check') {
