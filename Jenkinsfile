@@ -67,8 +67,8 @@ pipeline {
                                // Scan the local filesystem (project folder)
                               sh '''
 
-                              mkdir -p ~/trivy-output
-                              trivy fs --format json --output ~/trivy-output/trivy-report.json .
+
+                              trivy fs --format json --output /home/vagrant/trivy-output/trivy-report.json .
 
                               '''
                 }
