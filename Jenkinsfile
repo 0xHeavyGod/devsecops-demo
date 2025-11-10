@@ -72,9 +72,9 @@ pipeline {
                                           trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
                                       '''
                                       archiveArtifacts artifacts: 'trivy-output/trivy-report.json', allowEmptyArchive: true
-                                  }
+                                  
 
-                             
+
                 }
             post {
                 always {
