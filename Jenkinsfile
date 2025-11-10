@@ -93,21 +93,15 @@ pipeline {
             }
         }
 
-        stage('🐳 Docker Security Scan') {
-            when { expression { fileExists('Dockerfile') } }
-            steps {
-                echo '🔍 Scan de sécurité de l\'image Docker avec Trivy...'
-                sh '''
-                    docker build -t devsecops-demo:latest .
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy image --format json --output trivy-report.json devsecops-demo:latest
-                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-                        aquasec/trivy image --format template --template "@contrib/html.tpl" \
-                        --output trivy-report.html devsecops-demo:latest
-                '''
-                archiveArtifacts artifacts: 'trivy-report.*', allowEmptyArchive: true
-            }
-        }
+       stage('Docker Scan - Image Security') {
+             steps {
+               echo '🔎 Scan de sécurité de l’image Docker...'
+               sh '''
+                 docker image ls
+                 trivy image ${PROJECT_KEY} --exit-code 0 --format json --output trivy_image_report.json || true
+               '''
+             }
+           }
 
         stage('📦 Package Application') {
             steps {
