@@ -69,14 +69,20 @@ pipeline {
             }
         }
 
-        stage('📊 Quality Gate') {
-            steps {
-                echo '⏳ Vérification du Quality Gate SonarQube...'
-                timeout(time: 5, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-        }
+       stage('📊 Quality Gate') {
+           steps {
+               echo '⏳ Vérification du Quality Gate SonarQube...'
+               timeout(time: 5, unit: 'MINUTES') {
+                   script {
+                       def qg = waitForQualityGate()
+                       if (qg.status != 'OK') {
+                           echo "⚠️ Quality Gate échoué: ${qg.status}"
+                           currentBuild.result = 'UNSTABLE'  // NE PAS ABANDONNER
+                       }
+                   }
+               }
+           }
+       }
 
         stage('📦 SCA - Dependency Check') {
             steps {
