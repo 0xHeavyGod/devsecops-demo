@@ -63,8 +63,10 @@ pipeline {
 
         stage('📦 SCA - Dependency Check') {
             steps {
-                echo '🔍 Analyse des dépendances avec OWASP Dependency-Check...'
-                sh 'mvn org.owasp:dependency-check-maven:check -DupdateOnly=false -Dnvd.skip=true'
+                sh '''
+                            echo "Scan avec Trivy..."
+                            trivy fs --security-checks vuln --format table --output trivy-report.txt .
+                        '''
             }
             post {
                 always {
