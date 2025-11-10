@@ -1,10 +1,10 @@
 pipeline {
     agent any
     options {
-            disableConcurrentBuilds()
-            skipDefaultCheckout(false)
-            timestamps()
-        }
+        disableConcurrentBuilds()
+        skipDefaultCheckout(false)
+        timestamps()
+    }
 
     tools {
         maven 'M2_HOME'
@@ -18,13 +18,13 @@ pipeline {
     }
 
     stages {
-    stage('🧭 Debug Workspace') {
-        steps {
-            echo "Workspace path: ${env.WORKSPACE}"
-            sh 'pwd'
-            sh 'ls -la'
+        stage('🧭 Debug Workspace') {
+            steps {
+                echo "Workspace path: ${env.WORKSPACE}"
+                sh 'pwd'
+                sh 'ls -la'
+            }
         }
-    }
 
         stage('🔍 Checkout Code') {
             steps {
@@ -39,13 +39,12 @@ pipeline {
                 script {
                     try {
                         sh '/usr/local/bin/gitleaks detect --source=. --report-format=json --report-path=gitleaks-report.json || true'
-                                archiveArtifacts allowEmptyArchive: true, artifacts: 'gitleaks-report.json'
+                        archiveArtifacts allowEmptyArchive: true, artifacts: 'gitleaks-report.json'
                     } catch (Exception e) {
                         echo "⚠️ Secrets détectés ! Vérifiez gitleaks-report.json"
                         currentBuild.result = 'UNSTABLE'
                     }
                 }
-                archiveArtifacts artifacts: 'gitleaks-report.json', allowEmptyArchive: true
             }
         }
 
@@ -64,65 +63,32 @@ pipeline {
         stage('🛡️ SAST - SonarQube Analysis') {
             steps {
                 echo '🔍 Analyse statique du code avec SonarQube...'
-                withSonarQubeEnv('SonarQube') { // Vérifier que le nom correspond à Jenkins
-                    sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.token=${env.SONAR_TOKEN}"
-                    echo "Sonar analysis finished"
+                withSonarQubeEnv('SonarQube') {
+                    sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.login=${env.SONAR_TOKEN}"
                 }
             }
         }
 
-     stage('🎯 DAST - Dynamic Security Testing') {
-         when {
-             expression {
-                 env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master'
-             }
-         }
-         steps {
-             echo '🔍 Scan DAST avec OWASP ZAP...'
-             script {
-                 try {
-                     sh '''
-                         docker run --rm -t owasp/zap2docker-stable zap-baseline.py \
-                         -t http://your-staging-url.com -r zap-report.html
-                     '''
-                 } catch (Exception e) {
-                     echo "⚠️ Vulnérabilités détectées par ZAP"
-                     currentBuild.result = 'UNSTABLE'
-                 }
-             }
-             publishHTML([
-                 allowMissing: true,
-                 alwaysLinkToLastBuild: true,
-                 keepAll: true,
-                 reportDir: '.',
-                 reportFiles: 'zap-report.html',
-                 reportName: 'ZAP Security Report',
-                 reportTitles: 'OWASP ZAP Security Report'
-             ])
-         }
-     }
-
-
+        stage('📊 Quality Gate') {
+            steps {
+                echo '⏳ Vérification du Quality Gate SonarQube...'
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
 
         stage('📦 SCA - Dependency Check') {
             steps {
                 echo '🔎 Running Trivy scan...'
-                        sh '''
-                            echo "Workspace: ${WORKSPACE}"
-                            mkdir -p "${WORKSPACE}/trivy-output"
-                            ls -ld "${WORKSPACE}/trivy-output"
-                            whoami
-                            trivy fs --security-checks vuln,config --format json -o "${WORKSPACE}/trivy-output/trivy-report.json" .
-                            echo "✅ Trivy report generated at: ${WORKSPACE}/trivy-output/trivy-report.json"
-                        '''
-
-
-
-                }
+                sh '''
+                    mkdir -p "${WORKSPACE}/trivy-output"
+                    trivy fs --security-checks vuln,config --format json -o "${WORKSPACE}/trivy-output/trivy-report.json" .
+                '''
+            }
             post {
                 always {
-                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
-                    archiveArtifacts artifacts: '**/dependency-check-report.html', allowEmptyArchive: true
+                    archiveArtifacts artifacts: '**/trivy-output/*.json', allowEmptyArchive: true
                 }
             }
         }
@@ -131,16 +97,14 @@ pipeline {
             when { expression { fileExists('Dockerfile') } }
             steps {
                 echo '🔍 Scan de sécurité de l\'image Docker avec Trivy...'
-                script {
-                    sh '''
-                        docker build -t devsecops-demo:latest .
-                        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                sh '''
+                    docker build -t devsecops-demo:latest .
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image --format json --output trivy-report.json devsecops-demo:latest
-                        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image --format template --template "@contrib/html.tpl" \
                         --output trivy-report.html devsecops-demo:latest
-                    '''
-                }
+                '''
                 archiveArtifacts artifacts: 'trivy-report.*', allowEmptyArchive: true
             }
         }
@@ -157,6 +121,33 @@ pipeline {
             }
         }
 
+        stage('🎯 DAST - Dynamic Security Testing') {
+            when { expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master' } }
+            steps {
+                echo '🔍 Scan DAST avec OWASP ZAP...'
+                script {
+                    try {
+                        sh '''
+                            docker run --rm -t owasp/zap2docker-stable zap-baseline.py \
+                            -t http://your-staging-url.com -r zap-report.html
+                        '''
+                    } catch (Exception e) {
+                        echo "⚠️ Vulnérabilités détectées par ZAP"
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
+                publishHTML([
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: '.',
+                    reportFiles: 'zap-report.html',
+                    reportName: 'ZAP Security Report',
+                    reportTitles: 'OWASP ZAP Security Report'
+                ])
+            }
+        }
+
         stage('🚀 Deploy to Staging') {
             when { branch 'main' }
             steps {
@@ -164,25 +155,13 @@ pipeline {
                 sh 'echo "Déploiement simulé vers staging"'
             }
         }
-
-
-        stage('📊 Quality Gate') {
-                    steps {
-                        echo '⏳ Vérification du Quality Gate SonarQube...'
-                        timeout(time: 1, unit: 'MINUTES') { // Timeout augmenté
-                            waitForQualityGate abortPipeline: true
-                        }
-                    }
-                }
     }
-
 
     post {
         always {
             echo '🧹 Nettoyage de l\'environnement...'
             cleanWs()
         }
-
         success {
             echo '✅ Pipeline terminé avec succès !'
             script {
@@ -205,11 +184,9 @@ pipeline {
                 }
             }
         }
-
         failure {
             echo '❌ Pipeline échoué !'
         }
-
         unstable {
             echo '⚠️ Build instable - Vulnérabilités détectées'
         }
