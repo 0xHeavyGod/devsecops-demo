@@ -94,6 +94,7 @@ pipeline {
         }
 
         stage('🐳 Docker Scan - Image Security') {
+            when { expression { fileExists('Dockerfile') } }  // <-- ne s'exécute que si Dockerfile présent
             steps {
                 echo '🔎 Scan de sécurité de l’image Docker...'
                 sh '''
@@ -122,6 +123,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('📦 Package Application') {
             steps {
