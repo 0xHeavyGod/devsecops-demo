@@ -63,11 +63,9 @@ pipeline {
 
         stage('📦 SCA - Dependency Check') {
             steps {
-               sh '''
-                           trivy --download-db-only
-                           trivy fs --scanners vuln --format json --output trivy-report.json .
-                       '''
-                       archiveArtifacts artifacts: 'trivy-report.json', allowEmptyArchive: true
+                echo '🔍 Scanning project with Trivy...'
+                               // Scan the local filesystem (project folder)
+                               sh 'trivy fs --format json --output trivy-report.json .'
             }
             post {
                 always {
