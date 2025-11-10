@@ -55,12 +55,8 @@ pipeline {
             steps {
                 echo '🔍 Analyse statique du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=${PROJECT_KEY} \
-                        -Dsonar.host.url==${SONAR_HOST} \
-                        -Dsonar.login=${SONAR_TOKEN}
-                    '''
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=devsecops-demo -Dsonar.host.url==http://192.168.33.10:9000 -Dsonar.login=$SONAR_TOKEN'
+
                 }
             }
         }
