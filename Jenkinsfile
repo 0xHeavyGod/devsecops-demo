@@ -79,11 +79,11 @@ pipeline {
                                // Scan the local filesystem (project folder)
 
                                       // Use Jenkins workspace, no sudo required
-                                      sh '''
-                                          mkdir -p $WORKSPACE/trivy-output
-                                          trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
-                                      '''
-                                      archiveArtifacts artifacts: 'trivy-output/trivy-report.json', allowEmptyArchive: true
+                                       sh '''
+                                                  mkdir -p ${WORKSPACE}/trivy-output
+                                                  trivy fs --security-checks vuln,config --format json -o ${WORKSPACE}/trivy-output/trivy-report.json .
+                                                  echo "Trivy scan completed. Report saved to ${WORKSPACE}/trivy-output/trivy-report.json"
+                                              '''
 
 
 
