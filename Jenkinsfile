@@ -147,7 +147,7 @@ pipeline {
 
         stage('Deploy') {
               steps {
-                echo "🚀 Déploiement du conteneur sur le port ${HOST_PORT}..."
+                echo '🚀 Déploiement du conteneur sur le port ${HOST_PORT}...'
                 sh """
                   docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop
                   docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm
