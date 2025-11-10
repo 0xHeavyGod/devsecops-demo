@@ -75,15 +75,15 @@ pipeline {
 
         stage('📦 SCA - Dependency Check') {
             steps {
-                echo '🔍 Scanning project with Trivy...'
-                               // Scan the local filesystem (project folder)
-
-                                      // Use Jenkins workspace, no sudo required
-                                       sh '''
-                                                  mkdir -p ${WORKSPACE}/trivy-output
-                                                  trivy fs --security-checks vuln,config --format json -o ${WORKSPACE}/trivy-output/trivy-report.json .
-                                                  echo "Trivy scan completed. Report saved to ${WORKSPACE}/trivy-output/trivy-report.json"
-                                              '''
+                echo '🔎 Running Trivy scan...'
+                        sh '''
+                            echo "Workspace: ${WORKSPACE}"
+                            mkdir -p "${WORKSPACE}/trivy-output"
+                            ls -ld "${WORKSPACE}/trivy-output"
+                            whoami
+                            trivy fs --security-checks vuln,config --format json -o "${WORKSPACE}/trivy-output/trivy-report.json" .
+                            echo "✅ Trivy report generated at: ${WORKSPACE}/trivy-output/trivy-report.json"
+                        '''
 
 
 
