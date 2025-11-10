@@ -95,16 +95,33 @@ pipeline {
             }
         }
 
-        stage('Docker Scan - Image Security') {
-              steps {
+        stage('🐳 Docker Scan - Image Security') {
+            when { expression { fileExists('Dockerfile') } }  // <-- seulement si Dockerfile présent
+            steps {
                 echo '🔎 Scan de sécurité de l’image Docker...'
-                sh '''
-                  docker image ls
-                  trivy image ${APP_NAME} --exit-code 0 --format json --output trivy_image_report.json || true
-                '''
-              }
-            }
+                sh """
+                    echo "🔹 Images Docker avant build:"
+                    docker image ls
 
+                    echo "🔹 Construction de l'image ${PROJECT_KEY}:latest..."
+                    docker build -t ${PROJECT_KEY}:latest .
+
+                    echo "🔹 Scan Trivy JSON de l'image..."
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy image --exit-code 0 --format json --output trivy_image_report.json ${PROJECT_KEY}:latest
+
+                    echo "🔹 Scan Trivy HTML de l'image..."
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy image --format template --template "@contrib/html.tpl" \
+                        --output trivy_image_report.html ${PROJECT_KEY}:latest
+                """
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy_image_report.*', allowEmptyArchive: true
+                }
+            }
+        }
 
         stage('📦 Package Application') {
             steps {
@@ -145,18 +162,19 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
-              steps {
-                echo '🚀 Déploiement du conteneur sur le port ${HOST_PORT}...'
+        stage('🚀 Deploy') {
+            steps {
+                echo "🚀 Déploiement du conteneur sur le port ${HOST_PORT}..."
                 sh """
-                  docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop
-                  docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm
-                  docker stop ${PROJECT_KEY} || true
-                  docker rm ${PROJECT_KEY} || true
-                  docker run -d --name ${PROJECT_KEY} -p ${HOST_PORT}:${APP_PORT} ${PROJECT_KEY}
+                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop
+                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm
+                    docker stop ${PROJECT_KEY} || true
+                    docker rm ${PROJECT_KEY} || true
+                    docker run -d --name ${PROJECT_KEY} -p ${HOST_PORT}:${APP_PORT} ${PROJECT_KEY}:latest
                 """
-              }
             }
+        }
+    }
 
     post {
         always {
