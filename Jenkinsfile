@@ -65,10 +65,7 @@ pipeline {
             steps {
                 echo '🔍 Scanning project with Trivy...'
                                // Scan the local filesystem (project folder)
-                              sh '''
 
-
-                               echo '🔍 Scanning project with Trivy...'
                                       // Use Jenkins workspace, no sudo required
                                       sh '''
                                           mkdir -p $WORKSPACE/trivy-output
@@ -77,7 +74,7 @@ pipeline {
                                       archiveArtifacts artifacts: 'trivy-output/trivy-report.json', allowEmptyArchive: true
                                   }
 
-                              '''
+                             
                 }
             post {
                 always {
