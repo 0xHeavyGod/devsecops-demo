@@ -66,8 +66,8 @@ pipeline {
                 echo '🔍 Scanning project with Trivy...'
                                // Scan the local filesystem (project folder)
                               sh '''
-                              mkdir -p $WORKSPACE/trivy-output
-                              trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
+                             
+                              sudo trivy fs --format json --output /home/vagrant/trivy-report.json .
                               '''
                 }
             post {
