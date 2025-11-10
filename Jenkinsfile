@@ -1,5 +1,10 @@
 pipeline {
     agent any
+    options {
+        disableConcurrentBuilds()
+        skipDefaultCheckout(false)
+        cleanWs()
+    }
 
     tools {
         maven 'M2_HOME'
@@ -72,7 +77,7 @@ pipeline {
                                           trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
                                       '''
                                       archiveArtifacts artifacts: 'trivy-output/trivy-report.json', allowEmptyArchive: true
-                                  
+
 
 
                 }
