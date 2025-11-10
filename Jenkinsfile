@@ -138,43 +138,49 @@ pipeline {
         stage('🎯 DAST - Dynamic Security Testing') {
             when { expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master' } }
             steps {
-                echo '🔍 Scan DAST avec OWASP ZAP...'
+                echo '🔍 Lancement du scan dynamique OWASP ZAP sur l’app Git...'
+
                 script {
+                    // Construire l'image depuis le code récupéré
+                    sh "docker build -t ${PROJECT_KEY}:latest ."
+
+                    // Lancer l'application temporairement
+                    sh """
+                        docker run -d --name temp-app -p 8082:${APP_PORT} ${PROJECT_KEY}:latest
+                        sleep 10
+                    """
+
+                    // Scanner avec OWASP ZAP
                     try {
-                        sh '''
+                        sh """
                             docker run --rm -t owasp/zap2docker-stable zap-baseline.py \
-                            -t http://your-staging-url.com -r zap-report.html
-                        '''
+                            -t http://localhost:8082 -r zap-report.html
+                        """
                     } catch (Exception e) {
                         echo "⚠️ Vulnérabilités détectées par ZAP"
                         currentBuild.result = 'UNSTABLE'
+                    } finally {
+                        // Nettoyer le container temporaire
+                        sh """
+                            docker stop temp-app || true
+                            docker rm temp-app || true
+                        """
                     }
                 }
+
+                // Publier le rapport HTML
                 publishHTML([
                     allowMissing: true,
                     alwaysLinkToLastBuild: true,
                     keepAll: true,
                     reportDir: '.',
                     reportFiles: 'zap-report.html',
-                    reportName: 'ZAP Security Report',
+                    reportName: 'OWASP ZAP Security Report',
                     reportTitles: 'OWASP ZAP Security Report'
                 ])
             }
         }
 
-        stage('🚀 Deploy') {
-            steps {
-                echo "🚀 Déploiement du conteneur sur le port ${HOST_PORT}..."
-                sh """
-                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop
-                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm
-                    docker stop ${PROJECT_KEY} || true
-                    docker rm ${PROJECT_KEY} || true
-                    docker run -d --name ${PROJECT_KEY} -p ${HOST_PORT}:${APP_PORT} ${PROJECT_KEY}:latest
-                """
-            }
-        }
-    }
 
     post {
         always {
