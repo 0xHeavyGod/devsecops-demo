@@ -96,7 +96,7 @@ pipeline {
         }
 
         stage('🐳 Docker Scan - Image Security') {
-            when { expression { fileExists('Dockerfile') } }  // <-- seulement si Dockerfile présent
+            when { expression { fileExists('Dockerfile') } }
             steps {
                 echo '🔎 Scan de sécurité de l’image Docker...'
                 sh """
@@ -139,7 +139,6 @@ pipeline {
             when { expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master' } }
             steps {
                 echo '🔍 Lancement du scan dynamique OWASP ZAP sur l’app Git...'
-
                 script {
                     // Construire l'image depuis le code récupéré
                     sh "docker build -t ${PROJECT_KEY}:latest ."
@@ -181,7 +180,18 @@ pipeline {
             }
         }
 
-}
+        stage('🚀 Deploy') {
+            steps {
+                echo "🚀 Déploiement du conteneur sur le port ${HOST_PORT}..."
+                sh """
+                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker stop || true
+                    docker ps -q --filter "publish=${HOST_PORT}" | xargs -r docker rm || true
+                    docker run -d --name ${PROJECT_KEY} -p ${HOST_PORT}:${APP_PORT} ${PROJECT_KEY}:latest
+                """
+            }
+        }
+    } // <-- fin stages
+
     post {
         always {
             echo '🧹 Nettoyage de l\'environnement...'
