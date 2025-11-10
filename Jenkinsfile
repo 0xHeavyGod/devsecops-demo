@@ -65,11 +65,11 @@ pipeline {
             steps {
                 echo '🔍 Scanning project with Trivy...'
                                // Scan the local filesystem (project folder)
-                               sh '''
-                               
-                               trivy fs --format json --output /home/vagrant/Desktop/jenkins/trivy-report.json .
-                               '''
-            }
+                              sh '''
+                              mkdir -p $WORKSPACE/trivy-output
+                              trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
+                              '''
+
             post {
                 always {
                     dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
