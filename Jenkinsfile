@@ -97,11 +97,10 @@ pipeline {
                         # Build de l'image Docker
                         docker build -t devsecops-demo:latest .
 
-                        # Scan avec Trivy
+                        # Scan avec Trivy (JSON + HTML)
                         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image --format json --output trivy-report.json devsecops-demo:latest
 
-                        # Scan HTML pour rapport
                         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
                         aquasec/trivy image --format template --template "@contrib/html.tpl" \
                         --output trivy-report.html devsecops-demo:latest
@@ -129,7 +128,6 @@ pipeline {
             }
             steps {
                 echo '🚀 Déploiement en environnement de staging...'
-                // Ajoutez ici vos commandes de déploiement
                 sh 'echo "Déploiement simulé vers staging"'
             }
         }
@@ -171,7 +169,7 @@ pipeline {
                 cleanWs()
             }
         }
-    }
+
         success {
             echo '✅ Pipeline terminé avec succès !'
             script {
@@ -194,6 +192,7 @@ pipeline {
                 }
             }
         }
+
         failure {
             echo '❌ Pipeline échoué !'
             script {
@@ -216,6 +215,7 @@ pipeline {
                 }
             }
         }
+
         unstable {
             echo '⚠️ Build instable - Vulnérabilités détectées'
             script {
