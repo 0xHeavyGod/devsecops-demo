@@ -181,7 +181,7 @@ pipeline {
             }
         }
 
-
+}
     post {
         always {
             echo '🧹 Nettoyage de l\'environnement...'
