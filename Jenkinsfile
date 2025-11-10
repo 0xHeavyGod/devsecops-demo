@@ -164,10 +164,10 @@ pipeline {
 
     post {
         always {
-            node {
+
                 echo '🧹 Nettoyage de l\'environnement...'
                 cleanWs()
-            }
+            
         }
 
         success {
