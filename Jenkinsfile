@@ -68,7 +68,14 @@ pipeline {
                               sh '''
 
 
-                              trivy fs --format json --output /home/vagrant/trivy-output/trivy-report.json .
+                               echo '🔍 Scanning project with Trivy...'
+                                      // Use Jenkins workspace, no sudo required
+                                      sh '''
+                                          mkdir -p $WORKSPACE/trivy-output
+                                          trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
+                                      '''
+                                      archiveArtifacts artifacts: 'trivy-output/trivy-report.json', allowEmptyArchive: true
+                                  }
 
                               '''
                 }
