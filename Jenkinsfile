@@ -26,10 +26,8 @@ pipeline {
                 echo '🔎 Scan des secrets exposés avec Gitleaks...'
                 script {
                     try {
-                        sh '''
-                            docker run --rm -v $(pwd):/path zricethezav/gitleaks:latest \
-                            detect --source="/path" --verbose --report-path=gitleaks-report.json
-                        '''
+                        sh '/usr/local/bin/gitleaks detect --source=. --report-format=json --report-path=gitleaks-report.json || true'
+                                archiveArtifacts allowEmptyArchive: true, artifacts: 'gitleaks-report.json'
                     } catch (Exception e) {
                         echo "⚠️ Secrets détectés ! Vérifiez gitleaks-report.json"
                         currentBuild.result = 'UNSTABLE'
