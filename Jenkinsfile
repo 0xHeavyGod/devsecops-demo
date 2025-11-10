@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        SONAR_TOKEN = credentials('sonar-token1')
+        SONAR_TOKEN = credentials('sqp_45a0b6e6f357f646e342c993118e868ae17228f9')
         SONAR_HOST = 'http://192.168.33.10:9000'
         PROJECT_KEY = 'devsecops-demo'
     }
@@ -55,7 +55,9 @@ pipeline {
             steps {
                 echo '🔍 Analyse statique du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') {
-                    sh 'mvn sonar:sonar -Dsonar.projectKey=devsecops-demo -Dsonar.host.url==http://192.168.33.10:9000 -Dsonar.login=$SONAR_TOKEN'
+                    sh "mvn sonar:sonar -Dsonar.projectKey=devsecops-demo \
+                                          -Dsonar.host.url=http://192.168.33.10:9000 \
+                                          -Dsonar.login=${SONAR_TOKEN}"
 
                 }
             }
