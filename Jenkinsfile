@@ -69,7 +69,7 @@ pipeline {
                               mkdir -p $WORKSPACE/trivy-output
                               trivy fs --format json --output $WORKSPACE/trivy-output/trivy-report.json .
                               '''
-
+                }
             post {
                 always {
                     dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
