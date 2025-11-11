@@ -12,7 +12,7 @@ pipeline {
     }
 
     environment {
-        SONAR_TOKEN = credentials('sonar-token2')
+        SONAR_TOKEN = credentials('sonarqube-token')
         SONAR_HOST = 'http://localhost:9000'
         PROJECT_KEY = 'devsecops-demo'
         HOST_PORT  = '8081'
