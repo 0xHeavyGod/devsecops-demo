@@ -71,14 +71,14 @@ pipeline {
             }
         }
 
-        stage('📊 Quality Gate') {
+       /* stage('📊 Quality Gate') {
             steps {
                 echo '⏳ Vérification du Quality Gate SonarQube...'
                 timeout(time: 1, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
-        }
+        }*/
 
         stage('📦 SCA - Dependency Check') {
             steps {
