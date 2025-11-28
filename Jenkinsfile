@@ -20,13 +20,6 @@ pipeline {
     }
 
     stages {
-        stage('🧭 Debug Workspace') {
-            steps {
-                echo "Workspace path: ${env.WORKSPACE}"
-                sh 'pwd'
-                sh 'ls -la'
-            }
-        }
 
         stage('🔍 Checkout Code') {
             steps {
@@ -94,6 +87,17 @@ pipeline {
                 }
             }
         }
+         stage('📦 Package Application') {
+                    steps {
+                        echo '📦 Packaging de l\'application...'
+                        sh 'mvn package -DskipTests'
+                    }
+                    post {
+                        success {
+                            archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                        }
+                    }
+                }
         stage('Docker Build') {
             steps {
                 echo '🐳 Building Docker image of the app...'
@@ -117,17 +121,7 @@ pipeline {
 
 
 
-        stage('📦 Package Application') {
-            steps {
-                echo '📦 Packaging de l\'application...'
-                sh 'mvn package -DskipTests'
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
-                }
-            }
-        }
+
 
         stage('🎯 DAST - Dynamic Security Testing') {
             steps {
