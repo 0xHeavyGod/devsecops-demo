@@ -95,7 +95,7 @@ pipeline {
             }
         }
 
-        sstage('📦 Build & Scan Docker Image') {
+        stage('📦 Build & Scan Docker Image') {
              steps {
                  echo '📦 Creating Dockerfile and building Docker image...'
 
