@@ -95,31 +95,7 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
-          steps {
-            echo '🐳 Création et construction de l’image Docker...'
-
-            sh '''
-              # Debug workspace
-              pwd
-              ls -la
-
-              # Create Dockerfile if it doesn't exist
-              if [ ! -f Dockerfile ]; then
-                cat > Dockerfile << 'EOF'
-        FROM eclipse-temurin:17-jdk-alpine
-        WORKDIR /app
-        COPY target/*.jar app.jar
-        EXPOSE 3000
-        ENTRYPOINT ["java", "-jar", "app.jar"]
-        EOF
-              fi
-
-              # Build Docker image
-              docker build -t ${PROJECT_KEY}:latest .
-            '''
-          }
-        }
+        
 
             stage('Docker Scan - Image Security') {
                   steps {
