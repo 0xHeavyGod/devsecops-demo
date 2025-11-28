@@ -95,15 +95,30 @@ pipeline {
             }
         }
 
-        stage('Docker Scan - Image Security') {
-              steps {
-                echo '🔎 Scan de sécurité de l’image Docker...'
-                sh '''
-                  docker image ls
-                  trivy image ${PROJECT_KEY} --exit-code 0 --format json --output trivy_image_report.json || true
-                '''
-              }
+        stage('📦 Build & Scan Docker Image') {
+            steps {
+                echo '📦 Building Docker image...'
+                sh """
+                    # Build Docker image
+                    docker build -t ${PROJECT_KEY}:latest .
+                """
+
+                echo '🔎 Scanning Docker image with Trivy...'
+                sh """
+                    # List images for debug
+                    docker image ls
+
+                    # Run Trivy scan
+                    trivy image ${PROJECT_KEY}:latest --exit-code 0 --format json --output trivy_image_report.json || true
+                """
             }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'trivy_image_report.json', allowEmptyArchive: true
+                }
+            }
+        }
+
 
         stage('📦 Package Application') {
             steps {
