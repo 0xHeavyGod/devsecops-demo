@@ -94,6 +94,13 @@ pipeline {
                 }
             }
         }
+        stage('Docker Build') {
+            steps {
+                echo '🐳 Building Docker image of the app...'
+                sh 'docker build -t ${PROJECT_KEY} .'
+            }
+        }
+
 
 
 
