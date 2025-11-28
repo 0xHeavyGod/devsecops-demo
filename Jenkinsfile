@@ -99,25 +99,25 @@ pipeline {
           steps {
             echo '🐳 Création et construction de l’image Docker...'
 
-            // Debug workspace
-            sh 'pwd'
-            sh 'ls -la'
-
-            // Create Dockerfile dynamically if it doesn't exist
             sh '''
-            if [ ! -f Dockerfile ]; then
-              cat > Dockerfile << 'EOF'
+              # Debug workspace
+              pwd
+              ls -la
+
+              # Create Dockerfile if it doesn't exist
+              if [ ! -f Dockerfile ]; then
+                cat > Dockerfile << 'EOF'
         FROM eclipse-temurin:17-jdk-alpine
         WORKDIR /app
         COPY target/*.jar app.jar
         EXPOSE 3000
         ENTRYPOINT ["java", "-jar", "app.jar"]
         EOF
-            fi
-            '''
+              fi
 
-            // Build Docker image
-            sh "docker build -t ${PROJECT_KEY}:latest ."
+              # Build Docker image
+              docker build -t ${PROJECT_KEY}:latest .
+            '''
           }
         }
 
