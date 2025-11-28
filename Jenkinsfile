@@ -95,7 +95,7 @@ pipeline {
             }
         }
 
-        
+
 
             stage('Docker Scan - Image Security') {
                   steps {
@@ -123,39 +123,39 @@ pipeline {
         }
 
         stage('🎯 DAST - Dynamic Security Testing') {
-                    steps {
-                        echo '🔍 Scan DAST avec OWASP ZAP...'
-                        echo '⚠️ Note: Configurez une URL cible réelle pour un scan complet'
-                        script {
-                            try {
-                                // Option 1: Scanner une URL publique de test
-                                sh '''
-                                    docker run --rm -v $(pwd):/zap/wrk/:rw \
-                                    owasp/zap2docker-stable zap-baseline.py \
+            steps {
+                echo '🔍 Scan DAST avec OWASP ZAP...'
+                script {
+                    try {
+                        sh '''
+                            docker run --rm \
+                                -v "$PWD:/zap/wrk/:rw" \
+                                -t ghcr.io/zaproxy/zaproxy:stable \
+                                zap-baseline.py \
                                     -t https://www.example.com \
                                     -g gen.conf \
                                     -r zap-report.html \
-                                    -J zap-report.json \
-                                    || true
-                                '''
-
-                                echo "✅ Scan DAST terminé - Vérifiez le rapport"
-                            } catch (Exception e) {
-                                echo "⚠️ DAST scan completed with warnings: ${e.message}"
-                                currentBuild.result = 'UNSTABLE'
-                            }
-                        }
-                        publishHTML([
-                            allowMissing: true,
-                            alwaysLinkToLastBuild: true,
-                            keepAll: true,
-                            reportDir: '.',
-                            reportFiles: 'zap-report.html',
-                            reportName: 'ZAP Security Report',
-                            reportTitles: 'OWASP ZAP Security Report'
-                        ])
+                                    -J zap-report.json || true
+                        '''
+                        echo "✅ Scan DAST terminé - rapport généré"
+                    } catch (Exception e) {
+                        echo "⚠️ DAST scan completed with warnings: ${e.message}"
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
+
+                publishHTML([
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: '.',
+                    reportFiles: 'zap-report.html',
+                    reportName: 'ZAP Security Report',
+                    reportTitles: 'OWASP ZAP Security Report'
+                ])
+            }
+        }
+
 
 
 
