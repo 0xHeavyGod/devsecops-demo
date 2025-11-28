@@ -1,14 +1,14 @@
-# Use OpenJDK base image
-FROM openjdk:17-jdk-slim
+# Use OpenJDK 17 slim base
+FROM openjdk:17-slim
 
-# Set working directory inside container
+# Set working directory
 WORKDIR /app
 
-# Copy Maven build output (your jar)
+# Copy Maven build output (jar)
 COPY target/*.jar app.jar
 
 # Expose app port
 EXPOSE 3000
 
-# Command to run the app
+# Run the app
 ENTRYPOINT ["java", "-jar", "app.jar"]
