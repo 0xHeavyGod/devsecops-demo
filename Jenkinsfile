@@ -28,7 +28,7 @@ pipeline {
             }
         }
 
-        stage(' Secrets Scan') {
+        stage('🔐 Secrets Scan') {
             steps {
                 echo '🔎 Scan des secrets exposés avec Gitleaks...'
                 script {
@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-        stage(' Build & Unit Tests') {
+        stage('🔨 Build & Unit Tests') {
             steps {
                 echo '🏗️ Compilation et tests unitaires...'
                 sh 'mvn clean compile test'
@@ -55,9 +55,9 @@ pipeline {
             }
         }
 
-        stage(' SAST - SonarQube Analysis') {
+        stage('🛡️ SAST - SonarQube Analysis') {
             steps {
-                echo ' Analyse statique du code avec SonarQube...'
+                echo '🔍 Analyse statique du code avec SonarQube...'
                 withSonarQubeEnv('SonarQube') {
                     sh "mvn sonar:sonar -Dsonar.projectKey=${env.PROJECT_KEY} -Dsonar.host.url=${env.SONAR_HOST} -Dsonar.login=${env.SONAR_TOKEN}"
                 }
@@ -73,7 +73,7 @@ pipeline {
             }
         }*/
 
-        stage(' SCA - Dependency Check') {
+        stage('📦 SCA - Dependency Check') {
             steps {
                 echo '🔎 Running Trivy scan...'
                 sh '''
@@ -87,9 +87,9 @@ pipeline {
                 }
             }
         }
-         stage(' Package Application') {
+         stage('📦 Package Application') {
                     steps {
-                        echo 'Packaging de l\'application...'
+                        echo '📦 Packaging de l\'application...'
                         sh 'mvn package -DskipTests'
                     }
                     post {
@@ -123,7 +123,7 @@ pipeline {
 
 
 
-        stage(' DAST - Dynamic Security Testing') {
+        stage('🎯 DAST - Dynamic Security Testing') {
             steps {
                 echo '🔍 Scan DAST avec OWASP ZAP...'
                 script {
@@ -164,7 +164,7 @@ pipeline {
 
     post {
         always {
-            echo ' Nettoyage de l\'environnement...'
+            echo '🧹 Nettoyage de l\'environnement...'
             cleanWs()
         }
         success {
